@@ -22,22 +22,30 @@ def Create_Admin(cursor):
             INSERT INTO User (Username, Email, Password, AccessLevel) 
             VALUES (?, ?, ?, ?)''',
             (usernameOfAdmin, "admin@hotmail.com", hashed_password, 1))
-
-    # bitcoin should exist
-    crypto_exists = "bitcoin"
-    cursor.execute("SELECT Name FROM Crypto WHERE Name = ?", (crypto_exists,))
-    foundCrypto = cursor.fetchone()
-    if foundCrypto is None:
-        cursor.execute('''
-            INSERT INTO Crypto (Name, Url) 
-            VALUES (?, ?)''',
-            ("bitcoin", "https://www.coingecko.com/en/coins/bitcoin"))
-
+        
     # admin wallet should exist with some bitcoin
     cursor.execute("SELECT ID FROM User WHERE Username = ?", (usernameOfAdmin,))
-    admin_id = cursor.fetchone()[0]
-    cursor.execute("SELECT ID FROM Crypto WHERE Name = ?", (crypto_exists,))
-    crypto_id = cursor.fetchone()[0]
+    admin_row = cursor.fetchone()
+    if admin_row is None:
+        raise RuntimeError("Admin user not found after insertion")
+    admin_id = admin_row[0]
+
+    # Ensure Bitcoin exists. Use CoinID for uniqueness and query by CoinID.
+    coin_id_value = "bitcoin"
+    cursor.execute("SELECT ID FROM Crypto WHERE CoinID = ?", (coin_id_value,))
+    crypto_row = cursor.fetchone()
+    if crypto_row is None:
+        cursor.execute('''
+            INSERT INTO Crypto (Name, CoinID)
+            VALUES (?, ?)''',
+            ("Bitcoin", coin_id_value))
+        cursor.execute("SELECT ID FROM Crypto WHERE CoinID = ?", (coin_id_value,))
+        crypto_row = cursor.fetchone()
+
+    if crypto_row is None:
+        raise RuntimeError("Failed to create or find Crypto with CoinID 'bitcoin'")
+
+    crypto_id = crypto_row[0]
     cursor.execute("SELECT * FROM Wallet WHERE UserID = ? AND CryptoID = ?", (admin_id, crypto_id))
     foundWallet = cursor.fetchone()
     if foundWallet is None:
@@ -63,8 +71,8 @@ def setup_database(dbLocation):
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Crypto (
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
-        Name TEXT UNIQUE,
-        Url TEXT
+        Name TEXT,
+        CoinID TEXT UNIQUE
     );''')
 
     cursor.execute('''

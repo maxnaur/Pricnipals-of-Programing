@@ -69,7 +69,7 @@ class Wallet_Sidebar:
         elif menu_name == "Wallet":
             self.load_WalletGUI()
         elif menu_name == "Buy":
-            set_Up_Buy(self.Menu)
+            buy = set_Up_Buy(self.Menu, self.dbLocation, self.userID)
             #self.load_BuyGUI()
         elif menu_name == "Transfer":
             self.load_TransferGUI()

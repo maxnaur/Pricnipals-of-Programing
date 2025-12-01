@@ -24,3 +24,18 @@ def search_crypto(term): # Search for specific crypto
     response = requests.get(url, params) # will return top 100 results
     assert response.status_code == 200, "API request failed" # error handling
     return response.json()
+
+def fetch_coin_details(coin_id):
+    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}"
+    params = {
+        "x-cg-demo-api-key" : random.randint(100000,999999),
+        "localization": "false",
+        "tickers": "false",
+        "market_data": "true",
+        "community_data": "false",
+        "developer_data": "false",
+        "sparkline": "false"
+    }
+    response = requests.get(url, params)
+    assert response.status_code == 200, "API request failed" # error handling
+    return response.json()

@@ -14,8 +14,8 @@ class database_connect():
     def get_userID(self, username):
         """Fetch user ID from username"""
         self.cur.execute("SELECT ID FROM User WHERE Username = ?", (username,))
-        user_id = self.cur.fetchone()[0]
-        return user_id
+        row = self.cur.fetchone()
+        return row[0] if row else None
     
     def get_userWallet(self, userID):
         """Fetch the user's wallet from the database."""
@@ -25,20 +25,28 @@ class database_connect():
     
     def check_or_add_crypto(self, coin_id, coin_name=None):
         # coin may not exist in the database but it will after this function
-        self.cur.execute("SELECT ID FROM Cryptocurrency WHERE CoinID = ?", (coin_id,))
-        result = self.cur.fetchone()
-        if result is not None:
+        # Use the existing `Crypto` table (created by e0_database_setup.py).
+        self.cur.execute("SELECT ID FROM Crypto WHERE CoinID = ?", (coin_id,))
+        row = self.cur.fetchone()
+        if row is None:
+            # coin does not exist, try to fetch details then add it
             if coin_name is None:
                 details = fetch_coin_details(coin_id)
                 coin_name = details.get('name', 'Unknown')
-            # coin does not exist, add it
             self.cur.execute(
-                "INSERT INTO Cryptocurrency (CoinID, Name) VALUES (?, ?)",
-                (coin_id, coin_name)
+                "INSERT INTO Crypto (Name, CoinID) VALUES (?, ?)",
+                (coin_name, coin_id)
             )
             self.db.commit()
-        criptoID = self.cur.execute("SELECT ID FROM Cryptocurrency WHERE CoinID = ?", (coin_id,)).fetchone()[0]
-        return criptoID
+            self.cur.execute("SELECT ID FROM Crypto WHERE CoinID = ?", (coin_id,))
+            row = self.cur.fetchone()
+
+        if row is None:
+            # unexpected: insertion or query failed
+            return None
+
+        cryptoID = row[0]
+        return cryptoID
     
     def add_crypto_to_wallet(self, userID, coin_id, amount):
         # get crypto ID

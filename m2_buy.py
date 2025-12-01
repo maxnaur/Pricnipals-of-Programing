@@ -19,18 +19,20 @@ class set_Up_Buy():
         self.Menu = Menu
         self.dbLocation = dbLocation
         self.userID = userID
+        self.Display = ctk.CTkFrame(self.Menu)
+        self.Display.pack(fill='both', expand=True)
         self.setup_Surch_GUI()
 
     def setup_Surch_GUI(self):
         # {'id': 'bitcoin', 'symbol': 'btc', 'name': 'Bitcoin', 'image': 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400', 'current_price': 63984, 'market_cap': 1276453073946, 'market_cap_rank': 1, 'fully_diluted_valuation': 1276503042862, 'total_volume': 59489755665, 'high_24h': 65208, 'low_24h': 63187, 'price_change_24h': 224.42, 'price_change_percentage_24h': 0.35198, 'market_cap_change_24h': 5743695879, 'market_cap_change_percentage_24h': 0.45201, 'circulating_supply': 19950600.0, 'total_supply': 19951381.0, 'max_supply': 21000000.0, 'ath': 93529, 'ath_change_percentage': -31.45666, 'ath_date': '2025-10-06T18:57:42.558Z', 'atl': 43.9, 'atl_change_percentage': 145923.68481, 'atl_date': '2013-07-05T00:00:00.000Z', 'roi': None, 'last_updated': '2025-11-22T13:34:00.574Z'}
-        self.search_entry = ctk.CTkEntry(self.Menu, width=350, placeholder_text="Search crypto...")
+        self.search_entry = ctk.CTkEntry(self.Display, width=350, placeholder_text="Search crypto...")
         # Bind Enter to call fetch_search_crypto; bind handlers receive an event argument
         self.search_entry.bind("<Return>", lambda event: self.fetch_search_crypto())
         self.search_entry.pack(pady=10)
-        self.search_button = ctk.CTkButton(self.Menu, text="Search", command=self.fetch_search_crypto)
+        self.search_button = ctk.CTkButton(self.Display, text="Search", command=self.fetch_search_crypto)
         self.search_button.pack(pady=5)
 
-        self.container = ctk.CTkFrame(self.Menu)
+        self.container = ctk.CTkFrame(self.Display)
         self.container.pack(padx=10, pady=10, fill="both", expand=True)
         self.list_frame = ctk.CTkScrollableFrame(self.container)
         self.list_frame.pack(fill="both", expand=True)
@@ -94,11 +96,10 @@ class set_Up_Buy():
         history = self.fetch_price_history(self.coin_id, days=365)
 
         # Clear previous content
-        self.clear_frame()
-        self.Menu.pack_forget()
+        self.Display_resset()
         
         # Info section
-        info_frame = ctk.CTkFrame(self.Menu)
+        info_frame = ctk.CTkFrame(self.Display)
         info_frame.pack(fill='x', padx=12, pady=8)
 
         if self.details is None:
@@ -123,7 +124,7 @@ class set_Up_Buy():
         Make_Label(f"24h change: {change_24h:.2f}%" if change_24h is not None else "24h change: N/A")
         
         # Purchase section
-        buy_frame = ctk.CTkFrame(self.Menu)
+        buy_frame = ctk.CTkFrame(self.Display)
         buy_frame.pack(fill='x', padx=12, pady=8)
         ctk.CTkLabel(buy_frame, text="Amount to buy (in GBP):").pack(side='left', padx=(0,6))
         self.amount_entry = ctk.CTkEntry(buy_frame, width=160)
@@ -132,7 +133,7 @@ class set_Up_Buy():
         ctk.CTkButton(buy_frame, text="Buy", command=self.send_buy).pack(side='left', padx=8)
 
         # Chart area
-        chart_frame = ctk.CTkFrame(self.Menu)
+        chart_frame = ctk.CTkFrame(self.Display)
         chart_frame.pack(fill='both', expand=True, padx=12, pady=8)
 
         if history and MATPLOTLIB_AVAILABLE:
@@ -218,5 +219,11 @@ class set_Up_Buy():
             icon="check")
         
         # resset
-        self.clear_frame()
+        self.Display_resset()
         self.setup_Surch_GUI()
+
+    def Display_resset(self):
+        self.Display.pack_forget()
+        self.Display = ctk.CTkFrame(self.Menu)
+        self.Display.pack(fill='both', expand=True)
+    

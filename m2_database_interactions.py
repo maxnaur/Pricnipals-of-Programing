@@ -39,6 +39,7 @@ class database_connect():
             )
             self.db.commit()
             self.cur.execute("SELECT ID FROM Crypto WHERE CoinID = ?", (coin_id,))
+            row = None
             row = self.cur.fetchone()
 
         if row is None:
@@ -71,8 +72,112 @@ class database_connect():
         self.db.commit()
         
 
+    def get_user_holdings(self, userID):
+        """Fetch all cryptocurrencies and amounts owned by a user."""
+        try:
+            self.cur.execute('''
+                SELECT c.ID, c.Name, c.CoinID, w.Amount 
+                FROM Wallet w
+                JOIN Crypto c ON w.CryptoID = c.ID
+                WHERE w.UserID = ?
+            ''', (userID,))
+            return self.cur.fetchall()
+        except Exception:
+            return []
+
+    def remove_crypto_from_wallet(self, userID, cryptoID, amount):
+        """Remove cryptocurrency from user's wallet."""
+        try:
+            # Check current amount
+            self.cur.execute(
+                "SELECT Amount FROM Wallet WHERE UserID = ? AND CryptoID = ?",
+                (userID, cryptoID)
+            )
+            result = self.cur.fetchone()
+
+            if result is None:
+                return False
+
+            current_amount = result[0]
+
+            # Validate amount (with small tolerance for floating point comparison)
+            if amount > current_amount + 1e-8:
+                return False
+
+            # If selling all (or nearly all due to float precision), delete the wallet entry
+            if abs(amount - current_amount) < 1e-8:
+                self.cur.execute(
+                    "DELETE FROM Wallet WHERE UserID = ? AND CryptoID = ?",
+                    (userID, cryptoID)
+                )
+            else:
+                # Update with new amount
+                new_amount = current_amount - amount
+                self.cur.execute(
+                    "UPDATE Wallet SET Amount = ? WHERE UserID = ? AND CryptoID = ?",
+                    (new_amount, userID, cryptoID)
+                )
+
+            self.db.commit()
+            return True
+        except Exception:
+            return False
         
 
+    def transfer_crypto(self, from_userID, to_userID, cryptoID, amount):
+        """Transfer cryptocurrency from one user to another."""
+        try:
+            # Validate recipient exists
+            self.cur.execute("SELECT ID FROM User WHERE ID = ?", (to_userID,))
+            if self.cur.fetchone() is None:
+                return False, "Recipient user not found"
+
+            # Check sender has sufficient balance
+            self.cur.execute(
+                "SELECT Amount FROM Wallet WHERE UserID = ? AND CryptoID = ?",
+                (from_userID, cryptoID)
+            )
+            result = self.cur.fetchone()
+
+            if result is None or result[0] < amount:
+                return False, "Insufficient balance"
+
+            # Deduct from sender
+            new_sender_amount = result[0] - amount
+            if abs(new_sender_amount) < 1e-8:  # Selling all
+                self.cur.execute(
+                    "DELETE FROM Wallet WHERE UserID = ? AND CryptoID = ?",
+                    (from_userID, cryptoID)
+                )
+            else:
+                self.cur.execute(
+                    "UPDATE Wallet SET Amount = ? WHERE UserID = ? AND CryptoID = ?",
+                    (new_sender_amount, from_userID, cryptoID)
+                )
+
+            # Add to recipient
+            self.cur.execute(
+                "SELECT Amount FROM Wallet WHERE UserID = ? AND CryptoID = ?",
+                (to_userID, cryptoID)
+            )
+            recipient_result = self.cur.fetchone()
+
+            if recipient_result is not None:
+                new_recipient_amount = recipient_result[0] + amount
+                self.cur.execute(
+                    "UPDATE Wallet SET Amount = ? WHERE UserID = ? AND CryptoID = ?",
+                    (new_recipient_amount, to_userID, cryptoID)
+                )
+            else:
+                self.cur.execute(
+                    "INSERT INTO Wallet (UserID, CryptoID, Amount) VALUES (?, ?, ?)",
+                    (to_userID, cryptoID, amount)
+                )
+
+            self.db.commit()
+            return True, "Transfer successful"
+        except Exception as e:
+            return False, f"Transfer failed: {str(e)}"
 
     def close(self):
         self.db.close()

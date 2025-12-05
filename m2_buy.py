@@ -126,7 +126,7 @@ class set_Up_Buy():
         # Purchase section
         buy_frame = ctk.CTkFrame(self.Display)
         buy_frame.pack(fill='x', padx=12, pady=8)
-        ctk.CTkLabel(buy_frame, text="Amount to buy (in GBP):").pack(side='left', padx=(0,6))
+        ctk.CTkLabel(buy_frame, text=f"Amount to buy ({self.coin_id.upper()}):").pack(side='left', padx=(0,6))
         self.amount_entry = ctk.CTkEntry(buy_frame, width=160)
         self.amount_entry.pack(side='left')
 
@@ -198,15 +198,17 @@ class set_Up_Buy():
     def send_buy(self):
         val = self.amount_entry.get().strip()
         try:
-            amount = float(val)
+            coin_amount = float(val)
         except Exception:
             CTkMessagebox(title="Error", message="Enter a valid number", icon="cancel")
             return
         
-        coin_amount = amount / self.current_price
         if coin_amount <= 0:
             CTkMessagebox(title="Error", message="Enter a positive amount", icon="cancel")
             return
+
+        # Calculate GBP cost
+        amount_gbp = coin_amount * self.current_price
 
         # interact with database
         db = database_connect(self.dbLocation)
@@ -215,7 +217,7 @@ class set_Up_Buy():
         
         CTkMessagebox(
             title="Purchase", 
-            message=f"You have baught £{amount:.2f} of {self.coin_name} (~{coin_amount:.6f} {self.details.get('symbol','')})", 
+            message=f"You have bought {coin_amount:.8f} {self.coin_id.upper()} for £{amount_gbp:.2f}", 
             icon="check")
         
         # resset

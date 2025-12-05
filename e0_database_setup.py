@@ -80,7 +80,7 @@ def setup_database(dbLocation):
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
         UserID INTEGER,
         CryptoID INTEGER,
-        Amount INTEGER,
+        Amount REAL,
         FOREIGN KEY(UserID) REFERENCES User(ID),
         FOREIGN KEY(CryptoID) REFERENCES Crypto(ID)
     );''')

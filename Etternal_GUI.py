@@ -1,5 +1,10 @@
 import customtkinter as ctk
 import os
+<<<<<<< Updated upstream
+=======
+from crypto_API import API_search
+from setup_database import setup_database
+>>>>>>> Stashed changes
 from Menu1 import Login_Sidebar
 from e0_database_setup import setup_database
 

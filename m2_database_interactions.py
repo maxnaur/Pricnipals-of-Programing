@@ -1,6 +1,10 @@
 from CTkMessagebox import CTkMessagebox
 import sqlite3 as sql
+<<<<<<< Updated upstream
 from cripto_search import fetch_coin_details
+=======
+from datetime import datetime, timezone
+>>>>>>> Stashed changes
 import re
 import bcrypt
 
@@ -9,7 +13,6 @@ class database_connect():
         self.dbLocation = dbLocation
         self.db = sql.connect(self.dbLocation)
         self.cur = self.db.cursor()
-
 
     def get_userID(self, username):
         """Fetch user ID from username"""
@@ -23,22 +26,22 @@ class database_connect():
         userWallet = self.cur.fetchone()
         return userWallet
     
-    def check_or_add_crypto(self, coin_id, coin_name=None):
+    def check_or_add_crypto(self, crypto_API, coinID, coin_Name=None):
         # coin may not exist in the database but it will after this function
         # Use the existing `Crypto` table (created by e0_database_setup.py).
-        self.cur.execute("SELECT ID FROM Crypto WHERE CoinID = ?", (coin_id,))
+        self.cur.execute("SELECT ID FROM Crypto WHERE CoinID = ?", (coinID,))
         row = self.cur.fetchone()
         if row is None:
             # coin does not exist, try to fetch details then add it
-            if coin_name is None:
-                details = fetch_coin_details(coin_id)
-                coin_name = details.get('name', 'Unknown')
+            if coin_Name is None:
+                details = crypto_API.fetch_single_coin_details(coinID)
+                coin_Name = details.get('name', 'Unknown')
             self.cur.execute(
                 "INSERT INTO Crypto (Name, CoinID) VALUES (?, ?)",
-                (coin_name, coin_id)
+                (coin_Name, coinID)
             )
             self.db.commit()
-            self.cur.execute("SELECT ID FROM Crypto WHERE CoinID = ?", (coin_id,))
+            self.cur.execute("SELECT ID FROM Crypto WHERE CoinID = ?", (coinID,))
             row = None
             row = self.cur.fetchone()
 
@@ -49,9 +52,9 @@ class database_connect():
         cryptoID = row[0]
         return cryptoID
     
-    def add_crypto_to_wallet(self, userID, coin_id, amount):
+    def add_crypto_to_wallet(self, crypto_API, userID, coinID, coin_Name, amount):
         # get crypto ID
-        cryptoID = self.check_or_add_crypto(coin_id)
+        cryptoID = self.check_or_add_crypto(crypto_API, coinID, coin_Name)
 
         # check if user already has this crypto in their wallet
         self.cur.execute("SELECT Amount FROM Wallet WHERE UserID = ? AND CryptoID = ?", (userID, cryptoID))
@@ -178,6 +181,25 @@ class database_connect():
             return True, "Transfer successful"
         except Exception as e:
             return False, f"Transfer failed: {str(e)}"
+        
+    # ----------------------------- Transactions Log interactions -----------------------------
+    def Transaction_Buy(self, cryptoID, userID, amount):
+        self.cur.execute(
+            "INSERT INTO Transactions_Buy (CryptoID, UserID, Amount, DateTime) VALUES (?, ?, ?, ?)",
+            (cryptoID, userID, amount, datetime.now(timezone.utc))
+        )
+    
+    def Tansaction_Sell(self, cryptoID, userID, amount):
+        self.cur.execute(
+            "INSERT INTO Transactions_Buy (CryptoID, UserID, Amount, DateTime) VALUES (?, ?, ?, ?)",
+            (cryptoID, userID, amount, datetime.now(timezone.utc))
+        )
+
+    def Tansaction_UserToUser(self, cryptoID, from_userID, to_userID, amount):
+        self.cur.execute(
+            "INSERT INTO Transactions_Buy (CryptoID, UserFromID, UserToID, Amount, DateTime) VALUES (?, ?, ?, ?)",
+            (cryptoID, from_userID, to_userID, amount, datetime.now(timezone.utc))
+        )
 
     def close(self):
         self.db.close()

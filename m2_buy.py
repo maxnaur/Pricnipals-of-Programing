@@ -1,30 +1,27 @@
 import customtkinter as ctk
+<<<<<<< Updated upstream
 from cripto_search import fetch_crypto_list, search_crypto
+=======
+>>>>>>> Stashed changes
 from m2_database_interactions import database_connect
 from CTkMessagebox import CTkMessagebox
 import requests
 from datetime import datetime
-
-# Optional plotting support. If matplotlib is not installed we'll still show details
-try:
-    from matplotlib.figure import Figure
-    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-    MATPLOTLIB_AVAILABLE = True
-except Exception:
-    MATPLOTLIB_AVAILABLE = False
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class set_Up_Buy():
-    def __init__(self, Menu, dbLocation, userID):
+    def __init__(self, Menu, dbLocation, API_Search, userID):
         """set up the list available cryptocurrencies GUI"""
         self.Menu = Menu
         self.dbLocation = dbLocation
         self.userID = userID
+        self.API_Search = API_Search
         self.Display = ctk.CTkFrame(self.Menu)
         self.Display.pack(fill='both', expand=True)
         self.setup_Surch_GUI()
 
     def setup_Surch_GUI(self):
-        # {'id': 'bitcoin', 'symbol': 'btc', 'name': 'Bitcoin', 'image': 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400', 'current_price': 63984, 'market_cap': 1276453073946, 'market_cap_rank': 1, 'fully_diluted_valuation': 1276503042862, 'total_volume': 59489755665, 'high_24h': 65208, 'low_24h': 63187, 'price_change_24h': 224.42, 'price_change_percentage_24h': 0.35198, 'market_cap_change_24h': 5743695879, 'market_cap_change_percentage_24h': 0.45201, 'circulating_supply': 19950600.0, 'total_supply': 19951381.0, 'max_supply': 21000000.0, 'ath': 93529, 'ath_change_percentage': -31.45666, 'ath_date': '2025-10-06T18:57:42.558Z', 'atl': 43.9, 'atl_change_percentage': 145923.68481, 'atl_date': '2013-07-05T00:00:00.000Z', 'roi': None, 'last_updated': '2025-11-22T13:34:00.574Z'}
         self.search_entry = ctk.CTkEntry(self.Display, width=350, placeholder_text="Search crypto...")
         # Bind Enter to call fetch_search_crypto; bind handlers receive an event argument
         self.search_entry.bind("<Return>", lambda event: self.fetch_search_crypto())
@@ -36,16 +33,21 @@ class set_Up_Buy():
         self.container.pack(padx=10, pady=10, fill="both", expand=True)
         self.list_frame = ctk.CTkScrollableFrame(self.container)
         self.list_frame.pack(fill="both", expand=True)
-        self.fetch_default_crypto_data()
+        self.fetch_top_crypto_currencys()
 
     # API calls
+<<<<<<< Updated upstream
     def fetch_default_crypto_data(self): # Fetch top 250 cryptos by market cap
         response = fetch_crypto_list()
+=======
+    def fetch_top_crypto_currencys(self): # Fetch top 250 cryptos by market cap
+        response = self.API_Search.fetch_top_250_crypto_list()
+>>>>>>> Stashed changes
         self.display_crypto_list(response)
     
     def fetch_search_crypto(self): # Search for specific crypto
         term = self.search_entry.get()
-        response = search_crypto(term)
+        response = self.API_Search.search_crypto(term)
         # The search endpoint returns a dict with a 'coins' list; normalize to a list
         if isinstance(response, dict):
             crypto_list = response.get('coins') or response.get('data') or []
@@ -85,15 +87,15 @@ class set_Up_Buy():
     def sellect_coin(self, coin):
         # Determine coin id and name
         if isinstance(coin, dict):
-            self.coin_id = coin.get('id') or coin.get('symbol') or coin.get('name')
-            self.coin_name = coin.get('name') or str(self.coin_id)
+            self.coin_ID = coin.get('id') or coin.get('symbol') or coin.get('name')
+            self.coin_name = coin.get('name') or str(self.coin_ID)
         else:
-            self.coin_id = str(coin)
-            self.coin_name = self.coin_id
+            self.coin_ID = str(coin)
+            self.coin_name = self.coin_ID
 
         # Fetch details and price history
-        self.details = self.fetch_coin_details(self.coin_id)
-        history = self.fetch_price_history(self.coin_id, days=365)
+        self.details = self.API_Search.fetch_single_coin_details(self.coin_ID)
+        history = self.API_Search.fetch_year_coin_history(self.coin_ID)
 
         # Clear previous content
         self.Display_resset()
@@ -117,7 +119,7 @@ class set_Up_Buy():
                 text=text, 
                 font=ctk.CTkFont(family='Consolas', size=12)
                 ).pack(anchor='w')
-        Make_Label(f"Coin ID: {self.coin_id}")
+        Make_Label(f"Coin ID: {self.coin_ID}")
         Make_Label(f"Name: {self.coin_name}")
         Make_Label(f"Current price (GBP): £{self.current_price:,}" if self.current_price is not None else "Price: N/A")
         Make_Label(f"Market cap (GBP): £{int(market_cap):,}" if market_cap else "Market cap: N/A")
@@ -126,7 +128,7 @@ class set_Up_Buy():
         # Purchase section
         buy_frame = ctk.CTkFrame(self.Display)
         buy_frame.pack(fill='x', padx=12, pady=8)
-        ctk.CTkLabel(buy_frame, text=f"Amount to buy ({self.coin_id.upper()}):").pack(side='left', padx=(0,6))
+        ctk.CTkLabel(buy_frame, text=f"Amount to buy ({self.coin_ID.upper()}):").pack(side='left', padx=(0,6))
         self.amount_entry = ctk.CTkEntry(buy_frame, width=160)
         self.amount_entry.pack(side='left')
 
@@ -136,7 +138,7 @@ class set_Up_Buy():
         chart_frame = ctk.CTkFrame(self.Display)
         chart_frame.pack(fill='both', expand=True, padx=12, pady=8)
 
-        if history and MATPLOTLIB_AVAILABLE:
+        if history:
             times = [datetime.fromtimestamp(p[0]/1000.0) for p in history]
             prices = [p[1] for p in history]
 
@@ -151,8 +153,6 @@ class set_Up_Buy():
             canvas = FigureCanvasTkAgg(fig, master=chart_frame)
             canvas.draw()
             canvas.get_tk_widget().pack(fill='both', expand=True)
-        elif history and not MATPLOTLIB_AVAILABLE:
-            ctk.CTkLabel(chart_frame, text="matplotlib not installed — install it to see the price chart").pack(pady=20)
         else:
             ctk.CTkLabel(chart_frame, text="No historical price data available").pack(pady=20)
 
@@ -164,36 +164,6 @@ class set_Up_Buy():
             child.destroy()
         self.list_frame.pack(fill="both", expand=True)
 
-    # ------------------------- Interact with API -------------------------
-    def fetch_coin_details(self, coin_id):
-        """Fetch coin details (market data) from CoinGecko."""
-        try:
-            url = f"https://api.coingecko.com/api/v3/coins/{coin_id}"
-            params = {
-                'localization': 'false',
-                'tickers': 'false',
-                'market_data': 'true',
-                'community_data': 'false',
-                'developer_data': 'false',
-                'sparkline': 'false'
-            }
-            r = requests.get(url, params=params, timeout=10)
-            r.raise_for_status()
-            return r.json()
-        except Exception:
-            return None
-
-    def fetch_price_history(self, coin_id, days=365):
-        """Fetch market chart (prices) for the coin in GBP for the last `days` days."""
-        try:
-            url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
-            params = {'vs_currency': 'gbp', 'days': days, 'interval': 'daily'}
-            r = requests.get(url, params=params, timeout=10)
-            r.raise_for_status()
-            data = r.json()
-            return data.get('prices')
-        except Exception:
-            return None
 
     def send_buy(self):
         val = self.amount_entry.get().strip()
@@ -212,12 +182,13 @@ class set_Up_Buy():
 
         # interact with database
         db = database_connect(self.dbLocation)
-        db.add_crypto_to_wallet(self.userID, self.coin_id, coin_amount)
+        db.add_crypto_to_wallet(self.API_Search, self.userID, self.coin_ID, self.coin_name, coin_amount)
+        db.Transaction_Buy(self.coin_ID, self.userID, coin_amount)
         db.close()
         
         CTkMessagebox(
             title="Purchase", 
-            message=f"You have bought {coin_amount:.8f} {self.coin_id.upper()} for £{amount_gbp:.2f}", 
+            message=f"You have bought {coin_amount:.8f} {self.coin_ID.upper()} for £{amount_gbp:.2f}", 
             icon="check")
         
         # resset

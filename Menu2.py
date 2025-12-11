@@ -1,5 +1,4 @@
 import customtkinter as ctk
-from CTkMessagebox import CTkMessagebox
 import requests
 import os
 from m2_database_interactions import database_connect
@@ -71,26 +70,10 @@ class Wallet_Sidebar:
         if menu_name == "Wallet":
             wallet = set_Up_Wallet(self.Menu, self.dbLocation, self.userID)
         elif menu_name == "Buy":
-            buy = set_Up_Buy(self.Menu, self.dbLocation, self.userID)
+            buy = set_Up_Buy(self.Menu, self.dbLocation, self.API_Search, self.userID)
         elif menu_name == "Sell":
             sell = set_Up_Sell(self.Menu, self.dbLocation, self.userID)
         elif menu_name == "Transfer":
             transfer = set_Up_Transfer(self.Menu, self.dbLocation, self.userID)
         elif menu_name == "QR Code\nof userID":
             Display_QR_code(self)
-
-
-if __name__ == "__main__":
-        dbLocation = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Database.db')
-        
-        # GUI setup
-        ctk.set_appearance_mode("Dark")  # Dark mode only
-        ctk.set_default_color_theme("dark-blue")
-
-        GUI = ctk.CTk()
-        GUI.title('Crypto Wallet')
-        GUI.geometry('500x400')
-
-        # Sidebar setup (make sure Login_Sidebar uses CTk widgets)
-        trigger = Wallet_Sidebar(GUI, dbLocation, "admin")
-        trigger.main.mainloop()

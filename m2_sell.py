@@ -1,6 +1,10 @@
 import customtkinter as ctk
 from m2_database_interactions import database_connect
+<<<<<<< Updated upstream
 from cripto_search import fetch_coin_details
+=======
+#from crypto_API import fetch_coin_details
+>>>>>>> Stashed changes
 from CTkMessagebox import CTkMessagebox
 
 class set_Up_Sell:

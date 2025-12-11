@@ -1,6 +1,9 @@
 import customtkinter as ctk
 from m2_database_interactions import database_connect
+<<<<<<< Updated upstream
 from cripto_search import fetch_coin_details
+=======
+>>>>>>> Stashed changes
 
 class set_Up_Wallet:
     def __init__(self, Menu, dbLocation, userID):

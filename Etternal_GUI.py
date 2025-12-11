@@ -1,20 +1,18 @@
 import customtkinter as ctk
 import os
-<<<<<<< Updated upstream
-=======
 from crypto_API import API_search
 from setup_database import setup_database
->>>>>>> Stashed changes
 from Menu1 import Login_Sidebar
-from e0_database_setup import setup_database
 
 class Etternal_GUI:
     def __init__(self):
         super().__init__()
 
+        self.API_search = API_search()
+
         # Database setup
         self.dbLocation = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Database.db')
-        setup_database(self.dbLocation)
+        setup_database(self.dbLocation, self.API_search)
 
         # GUI setup
         ctk.set_appearance_mode("Dark")  # Dark mode only
@@ -26,7 +24,7 @@ class Etternal_GUI:
         
 
         # Sidebar setup
-        Login_Sidebar(self.main, self.dbLocation)
+        Login_Sidebar(self.main, self.dbLocation, self.API_search)
 
     def closeBase(self):
         self.main.destroy()

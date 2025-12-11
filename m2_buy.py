@@ -1,8 +1,4 @@
 import customtkinter as ctk
-<<<<<<< Updated upstream
-from cripto_search import fetch_crypto_list, search_crypto
-=======
->>>>>>> Stashed changes
 from m2_database_interactions import database_connect
 from CTkMessagebox import CTkMessagebox
 import requests
@@ -36,13 +32,8 @@ class set_Up_Buy():
         self.fetch_top_crypto_currencys()
 
     # API calls
-<<<<<<< Updated upstream
-    def fetch_default_crypto_data(self): # Fetch top 250 cryptos by market cap
-        response = fetch_crypto_list()
-=======
     def fetch_top_crypto_currencys(self): # Fetch top 250 cryptos by market cap
         response = self.API_Search.fetch_top_250_crypto_list()
->>>>>>> Stashed changes
         self.display_crypto_list(response)
     
     def fetch_search_crypto(self): # Search for specific crypto

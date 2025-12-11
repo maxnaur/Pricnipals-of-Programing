@@ -2,7 +2,7 @@ from m1_create_ctk import _create_top_label, _create_entry_row, _create_button_b
 from m1_database_interactions import database_connect
 from Menu2 import Wallet_Sidebar
 
-def load_LoginGUI(self):
+def load_LoginGUI(self, API_search):
     # Login Label
     self.lbl = _create_top_label(self.Menu, "Login")
 
@@ -23,4 +23,4 @@ def Verify_login(self):
         username = self.UserN_En.get().strip()
         self.Menu.pack_forget()
         self.sidebar.pack_forget()
-        Wallet_Sidebar(self.main, self.dbLocation, username)
+        wallet = Wallet_Sidebar(self.main, self.dbLocation, self.API_search, username)

@@ -13,7 +13,7 @@ def _create_entry_row(Menu, label_text, show=None):
     """Create a labeled entry with buffer"""
     row = ctk.CTkFrame(Menu)
     row.pack(fill='x', pady=7, padx=10)
-    ctk.CTkLabel(
+    labal = ctk.CTkLabel(
         row,
         text=label_text.rjust(9),
         font=('Consolas', 12)

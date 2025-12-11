@@ -11,14 +11,14 @@ from m2_qr_code import Display_QR_code
 
 
 class Wallet_Sidebar:
-    def __init__(self, main, dbLocation, username):
+    def __init__(self, main, dbLocation, API_search, username):
         """Initialize the wallet sidebar."""
         self.main = main
         self.main.geometry('1000x800')
         self.sidebar = ctk.CTkFrame(self.main, width=120, fg_color="gray30")
         self.sidebar.pack(side='left', fill='y')
         self.dbLocation = dbLocation
-        self.username = username
+        self.API_search = API_search
         self.Menu = None
 
         # Database connection
@@ -68,9 +68,9 @@ class Wallet_Sidebar:
         self.Menu.pack(fill='both', expand=True)
 
         if menu_name == "Wallet":
-            wallet = set_Up_Wallet(self.Menu, self.dbLocation, self.userID)
+            wallet = set_Up_Wallet(self.Menu, self.dbLocation, self.API_search, self.userID)
         elif menu_name == "Buy":
-            buy = set_Up_Buy(self.Menu, self.dbLocation, self.API_Search, self.userID)
+            buy = set_Up_Buy(self.Menu, self.dbLocation, self.API_search, self.userID)
         elif menu_name == "Sell":
             sell = set_Up_Sell(self.Menu, self.dbLocation, self.userID)
         elif menu_name == "Transfer":

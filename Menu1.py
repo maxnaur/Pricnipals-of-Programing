@@ -3,10 +3,11 @@ from m1_login import load_LoginGUI
 from m1_register import load_NewUserGUI
 
 class Login_Sidebar:
-    def __init__(self, main, dbLocation):
+    def __init__(self, main, dbLocation, API_search):
         """Initialize the login sidebar."""
         self.main = main
         self.dbLocation = dbLocation
+        self.API_search = API_search
         self.sidebar = ctk.CTkFrame(self.main, width=120, fg_color="gray30")
         self.sidebar.pack(side='left', fill='y')
         self.Menu = None
@@ -48,6 +49,6 @@ class Login_Sidebar:
         self.Menu.pack(fill='both', expand=True)
 
         if menu_name == "Login":
-            load_LoginGUI(self)
+            load_LoginGUI(self, self.API_search)
         elif menu_name == "Register":
             load_NewUserGUI(self)

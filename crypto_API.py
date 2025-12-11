@@ -13,6 +13,11 @@ from CTkMessagebox import CTkMessagebox
 class API_search():
     def __init__(self):
         self.call_list = []
+        self.cash_top_250 = {}
+        self.cash_top_250_last_call = None
+        self.cash_wallet_coinIDs = None
+        self.cash_wallet = {}
+        self.cash_wallet_last_call = None
 
     def check_last_call(self):
         """make sure api is not called more than 6 times per minute"""
@@ -40,9 +45,23 @@ class API_search():
             print(f"Error fetching data: {e}")
             return {}
 
+    def check_cash(self, last_called, cash):
+        current_time = datetime.now(timezone.utc)
+        diff_seconds = (current_time - last_called).total_seconds()
+        if diff_seconds < 60:
+            return True, cash
+        else:
+            return False, {}
+
     # in order of call throughout coded
     def fetch_crypto_batch(self, coin_ids):
         """Fetch coin data (names, prices, market data) for a list of coin IDs in a single API call."""
+        # check cash if the wallet has been called before
+        if self.cash_wallet_coinIDs == coin_ids:
+            (cash, data) = self.check_cash(self.cash_wallet_last_call, self.cash_wallet)
+            if cash:
+                return data
+        
         if self.check_last_call():
             return {}
         
@@ -74,9 +93,16 @@ class API_search():
                     'market_data': coin  # full data available if needed
                 }
         
-        return batch_data
+        self.cash_wallet_coinIDs = coin_ids
+        self.cash_wallet_last_call = datetime.now(timezone.utc)
+        self.cash_wallet = batch_data
+        return self.cash_wallet
         
     def fetch_top_250_crypto_list(self): # Fetch top 250 cryptos by market cap
+        (cash, data) = self.check_cash(self.cash_top_250_last_call, self.cash_top_250)
+        if cash:
+            return data
+
         if self.check_last_call():
             return {}
         
@@ -101,8 +127,9 @@ class API_search():
             "query": term # search term
             }
         
-        data = self.request(url, params)
-        return data
+        self.cash_top_250 = self.request(url, params)
+        self.cash_top_250_last_call = datetime.now(timezone.utc)
+        return self.cash_top_250
     
     def fetch_single_coin_details(self, coin_id):
         if self.check_last_call():

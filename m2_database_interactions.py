@@ -1,10 +1,6 @@
 from CTkMessagebox import CTkMessagebox
 import sqlite3 as sql
-<<<<<<< Updated upstream
-from cripto_search import fetch_coin_details
-=======
 from datetime import datetime, timezone
->>>>>>> Stashed changes
 import re
 import bcrypt
 

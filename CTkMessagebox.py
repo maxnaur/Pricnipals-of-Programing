@@ -1,3 +1,4 @@
+"""Allows for when the customtkinter is not working which happened a lot"""
 try:
     # Use CTkMessagebox from customtkinter when available
     from customtkinter import CTkMessagebox  # type: ignore

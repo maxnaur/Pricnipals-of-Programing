@@ -7,6 +7,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class set_Up_Buy():
+    """create GUI for perchasing with the top 250 option by market cap"""
     def __init__(self, Menu, dbLocation, API_Search, userID):
         """set up the list available cryptocurrencies GUI"""
         self.Menu = Menu
@@ -15,9 +16,10 @@ class set_Up_Buy():
         self.API_Search = API_Search
         self.Display = ctk.CTkFrame(self.Menu)
         self.Display.pack(fill='both', expand=True)
-        self.setup_Surch_GUI()
+        self.setup_Search_GUI()
 
-    def setup_Surch_GUI(self):
+    def setup_Search_GUI(self):
+        """set up search bar the the data"""
         self.search_entry = ctk.CTkEntry(self.Display, width=350, placeholder_text="Search crypto...")
         # Bind Enter to call fetch_search_crypto; bind handlers receive an event argument
         self.search_entry.bind("<Return>", lambda event: self.fetch_search_crypto())
@@ -32,13 +34,15 @@ class set_Up_Buy():
         self.fetch_top_crypto_currencys()
 
     # API calls
-    def fetch_top_crypto_currencys(self): # Fetch top 250 cryptos by market cap
+    def fetch_top_crypto_currencys(self): 
+        """Fetch top 250 cryptos by market cap"""
         response = self.API_Search.fetch_top_250_crypto_list()
         self.display_crypto_list(response)
     
-    def fetch_search_crypto(self): # Search for specific crypto
+    def fetch_search_crypto(self): 
+        """Search for specific crypto"""
         term = self.search_entry.get()
-        response = self.API_Search.search_crypto(term)
+        response = self.API_Search.search_coins(term)
         # The search endpoint returns a dict with a 'coins' list; normalize to a list
         if isinstance(response, dict):
             crypto_list = response.get('coins') or response.get('data') or []
@@ -46,8 +50,9 @@ class set_Up_Buy():
             crypto_list = response
         self.display_crypto_list(crypto_list)
 
-    # make the display list and search function
+
     def display_crypto_list(self, crypto_data):
+        """make the display list and search function"""
         self.clear_frame()
 
         for coin in crypto_data:
@@ -76,6 +81,7 @@ class set_Up_Buy():
             
 
     def sellect_coin(self, coin):
+        """display seached cryto currency with its market data"""
         # Determine coin id and name
         if isinstance(coin, dict):
             self.coin_ID = coin.get('id') or coin.get('symbol') or coin.get('name')
@@ -157,6 +163,7 @@ class set_Up_Buy():
 
 
     def send_buy(self):
+        """interact with the database to perchase the crypto and add it to the wallet"""
         val = self.amount_entry.get().strip()
         try:
             coin_amount = float(val)
@@ -179,14 +186,15 @@ class set_Up_Buy():
         
         CTkMessagebox(
             title="Purchase", 
-            message=f"You have bought {coin_amount:.8f} {self.coin_ID.upper()} for £{amount_gbp:.2f}", 
+            message=f"You have bought {coin_amount:.2f} {self.coin_ID.upper()} for £{amount_gbp:.2f}", 
             icon="check")
         
         # resset
         self.Display_resset()
-        self.setup_Surch_GUI()
+        self.setup_Search_GUI()
 
     def Display_resset(self):
+        """Resset everything"""
         self.Display.pack_forget()
         self.Display = ctk.CTkFrame(self.Menu)
         self.Display.pack(fill='both', expand=True)

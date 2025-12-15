@@ -1,5 +1,5 @@
 import customtkinter as ctk
-import requests
+import qrcode
 import os
 from m2_database_interactions import database_connect
 
@@ -26,6 +26,11 @@ class Wallet_Sidebar:
         self.userID = self.db.get_userID(username)
         self.holdings = self.db.get_userWallet(self.userID)
         self.db.close()
+        
+        # make QR code and save to file
+        qr_image = qrcode.make(self.userID)
+        qrLocation = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'user_wallet_qr.png')
+        qr_image.save(qrLocation)
 
         self.Setup_sidebar()
 

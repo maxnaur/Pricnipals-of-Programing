@@ -3,6 +3,7 @@ from m1_database_interactions import database_connect
 from Menu2 import Wallet_Sidebar
 
 def load_LoginGUI(self, API_search):
+    """Load Login GUI"""
     # Login Label
     self.lbl = _create_top_label(self.Menu, "Login")
 
@@ -16,6 +17,7 @@ def load_LoginGUI(self, API_search):
     _create_button_bottom(self.Menu, "Login", lambda: Verify_login(self))
 
 def Verify_login(self):
+    """Check login then move onto Menu 2"""
     database = database_connect(self.dbLocation)
     worked = database.Verify_login(self)
     database.close()
@@ -23,4 +25,7 @@ def Verify_login(self):
         username = self.UserN_En.get().strip()
         self.Menu.pack_forget()
         self.sidebar.pack_forget()
-        wallet = Wallet_Sidebar(self.main, self.dbLocation, self.API_search, username)
+        try:
+            wallet = Wallet_Sidebar(self.main, self.dbLocation, self.API_search, username)
+        except Exception as exc:
+            print(f"Error while loading in: {exc!r}")

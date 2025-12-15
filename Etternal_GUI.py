@@ -5,6 +5,7 @@ from setup_database import setup_database
 from Menu1 import Login_Sidebar
 
 class Etternal_GUI:
+    """Create innishal Window that most things will resside in"""
     def __init__(self):
         super().__init__()
 
@@ -25,9 +26,6 @@ class Etternal_GUI:
 
         # Sidebar setup
         Login_Sidebar(self.main, self.dbLocation, self.API_search)
-
-    def closeBase(self):
-        self.main.destroy()
 
 
 if __name__ == "__main__":

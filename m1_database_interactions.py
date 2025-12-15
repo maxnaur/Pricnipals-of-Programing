@@ -4,6 +4,7 @@ import re
 import bcrypt
 
 class database_connect():
+    """Connect to database to allow for all changes in Menu 1 with error checking"""
     def __init__(self, dbLocation):
         self.dbLocation = dbLocation
         self.db = sql.connect(self.dbLocation)

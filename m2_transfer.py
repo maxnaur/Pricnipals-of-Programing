@@ -158,7 +158,7 @@ class set_Up_Transfer:
             # Perform transfer
             db = database_connect(self.dbLocation)
             try:
-                success, message = db.transfer_crypto(self.userID, recipient_id, crypto_id, transfer_amount)
+                success, message = db.transfer_crypto_to_account(self.userID, recipient_id, crypto_id, transfer_amount)
                 db.close()
             except Exception as e:
                 db.close()

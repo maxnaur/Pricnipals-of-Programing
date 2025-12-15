@@ -2,9 +2,12 @@ import customtkinter as ctk
 from m2_database_interactions import database_connect
 
 class set_Up_Wallet:
-    def __init__(self, Menu, dbLocation, userID):
+    """Display User wallet GUI"""
+    def __init__(self, Menu, dbLocation, API_search, userID):
+        """set up GUI"""
         self.Menu = Menu
         self.dbLocation = dbLocation
+        self.API_search = API_search
         self.userID = userID
         self.display_wallet()
 
@@ -21,17 +24,10 @@ class set_Up_Wallet:
         db = database_connect(self.dbLocation)
         
         # Get all cryptos in wallet
-        db.cur.execute('''
-            SELECT c.Name, c.CoinID, w.Amount 
-            FROM Wallet w
-            JOIN Crypto c ON w.CryptoID = c.ID
-            WHERE w.UserID = ?
-        ''', (self.userID,))
-        
-        holdings = db.cur.fetchall()
+        Wallet = db.get_userWallet(self.userID)
         db.close()
 
-        if not holdings:
+        if not Wallet:
             ctk.CTkLabel(
                 self.Menu,
                 text="No cryptocurrencies in your wallet",
@@ -48,14 +44,19 @@ class set_Up_Wallet:
 
         total_value = 0
 
-        for coin_name, coin_id, amount in holdings:
+        # find names of all crypto currensy's
+        Coin_IDs = [row[0] for row in Wallet]
+        coins_details = self.API_search.fetch_crypto_batch(Coin_IDs)
+
+        for Coin_ID, Coin_Name, amount in Wallet:
             # Fetch current price
             try:
-                details = fetch_coin_details(coin_id)
-                price_gbp = details.get('market_data', {}).get('current_price', {}).get('gbp', 0)
+                temp1 = coins_details[Coin_ID]
+                price_gbp = temp1.get('current_price', {})
+                #price_gbp = coins_details[name].get('market_data', {}).get('current_price', {}).get('gbp', 0)
             except Exception:
                 price_gbp = 0
-
+            
             coin_value = amount * price_gbp
             total_value += coin_value
 
@@ -65,13 +66,13 @@ class set_Up_Wallet:
 
             ctk.CTkLabel(
                 holding_frame,
-                text=f"{coin_name} ({coin_id.upper()})",
+                text=f"{Coin_Name} ({Coin_ID.upper()})",
                 font=ctk.CTkFont(family='Consolas', size=12, weight="bold")
             ).pack(anchor="w", padx=10, pady=(5, 2))
 
             ctk.CTkLabel(
                 holding_frame,
-                text=f"Amount: {amount:.8f}",
+                text=f"Amount: {amount:.2f}",
                 font=ctk.CTkFont(family='Consolas', size=11)
             ).pack(anchor="w", padx=10)
 

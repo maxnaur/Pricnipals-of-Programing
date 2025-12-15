@@ -3,6 +3,7 @@ from m1_login import load_LoginGUI
 from m1_register import load_NewUserGUI
 
 class Login_Sidebar:
+    """Create first Sidebar which will allow the user to login and create an account"""
     def __init__(self, main, dbLocation, API_search):
         """Initialize the login sidebar."""
         self.main = main
@@ -41,7 +42,7 @@ class Login_Sidebar:
 
     # ------------------------- Menu Switching -------------------------
     def Load_Menu(self, menu_name):
-        """Switch between Home, Login, and Register menus."""
+        """Switch between Login, and Register menus."""
         if self.Menu:
             self.Menu.pack_forget()
 

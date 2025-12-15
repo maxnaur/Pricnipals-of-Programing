@@ -5,6 +5,7 @@ import re
 import bcrypt
 
 class database_connect():
+    """Connect to database to allow for all changes in Menu 2"""
     def __init__(self, dbLocation):
         self.dbLocation = dbLocation
         self.db = sql.connect(self.dbLocation)
@@ -18,12 +19,19 @@ class database_connect():
     
     def get_userWallet(self, userID):
         """Fetch the user's wallet from the database."""
-        self.cur.execute("SELECT CryptoID, Amount FROM Wallet WHERE UserID = ?", (userID,))
-        userWallet = self.cur.fetchone()
+        self.cur.execute("""SELECT c.CoinID, c.Name, w.Amount 
+                        FROM Wallet w JOIN Crypto c ON w.CryptoID = c.ID 
+                        WHERE w.UserID = ?""", (userID,))
+        userWallet = self.cur.fetchall()  # Use fetchall() to get all rows
+
+        # make sure its a 2 dimentional list
+        if userWallet != None:
+            if not isinstance(userWallet, list):
+                userWallet = [userWallet] # get the first item from a 1 dimentional list
         return userWallet
     
     def check_or_add_crypto(self, crypto_API, coinID, coin_Name=None):
-        # coin may not exist in the database but it will after this function
+        """coin may not exist in the database but it will after this function"""
         # Use the existing `Crypto` table (created by e0_database_setup.py).
         self.cur.execute("SELECT ID FROM Crypto WHERE CoinID = ?", (coinID,))
         row = self.cur.fetchone()
@@ -49,6 +57,7 @@ class database_connect():
         return cryptoID
     
     def add_crypto_to_wallet(self, crypto_API, userID, coinID, coin_Name, amount):
+        """Add Cryto currency to A user account"""
         # get crypto ID
         cryptoID = self.check_or_add_crypto(crypto_API, coinID, coin_Name)
 
@@ -123,7 +132,7 @@ class database_connect():
             return False
         
 
-    def transfer_crypto(self, from_userID, to_userID, cryptoID, amount):
+    def transfer_crypto_to_account(self, from_userID, to_userID, cryptoID, amount):
         """Transfer cryptocurrency from one user to another."""
         try:
             # Validate recipient exists

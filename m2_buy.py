@@ -153,8 +153,8 @@ class set_Up_Buy():
         else:
             ctk.CTkLabel(chart_frame, text="No historical price data available").pack(pady=20)
 
-    # genteral utility to clear the main frame
     def clear_frame(self):
+        """genteral utility to clear the main frame"""
         self.list_frame.pack_forget()
         # Remove any previous buttons/widgets so we don't accumulate duplicates
         for child in self.list_frame.winfo_children():

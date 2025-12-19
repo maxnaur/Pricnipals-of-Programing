@@ -52,4 +52,4 @@ class Login_Sidebar:
         if menu_name == "Login":
             load_LoginGUI(self, self.API_search)
         elif menu_name == "Register":
-            load_NewUserGUI(self)
+            load_NewUserGUI(self, self.API_search)

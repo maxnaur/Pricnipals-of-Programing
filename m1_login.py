@@ -18,7 +18,7 @@ def load_LoginGUI(self, API_search):
 
 def Verify_login(self):
     """Check login then move onto Menu 2"""
-    database = database_connect(self.dbLocation)
+    database = database_connect(self.API_search, self.dbLocation)
     worked = database.Verify_login(self)
     database.close()
     if worked:

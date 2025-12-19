@@ -1,5 +1,4 @@
 import requests
-import random
 from datetime import datetime, timezone
 
 # using CoinGecko

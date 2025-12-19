@@ -3,9 +3,12 @@ import sqlite3 as sql
 import re
 import bcrypt
 
+from setup_database import Add_Coins, Add_Wallet
+
 class database_connect():
     """Connect to database to allow for all changes in Menu 1 with error checking"""
-    def __init__(self, dbLocation):
+    def __init__(self, API_Search, dbLocation):
+        self.API_Search = API_Search
         self.dbLocation = dbLocation
         self.db = sql.connect(self.dbLocation)
         self.cur = self.db.cursor()
@@ -97,6 +100,23 @@ class database_connect():
             VALUES (?, ?, ?, ?)''',
             (username, email, hashedPassword, 0)
         )
+
+        # Set up initial wallet for user with dummy data
+        WALLET = {
+            'bitcoin': 0.5,
+            'ethereum': 2,
+            'tether': 1000,
+            'binancecoin': 1,
+            'solana': 10,
+            'ripple': 500,
+        }
+
+        self.cur.execute("SELECT ID FROM User WHERE Username = ?", (username,))
+        User_ID = self.cur.fetchone()[0]
+
+        crypto_ID_List = Add_Coins(self.cur, WALLET, self.API_Search)
+        Add_Wallet(self.cur, User_ID, crypto_ID_List, WALLET)
+        
         self.db.commit()
 
         CTkMessagebox(title="Success", message="Account created successfully!", icon="check")

@@ -98,7 +98,7 @@ class database_connect():
         try:
             # Check current amount
             self.cur.execute(
-                "SELECT Amount FROM Wallet WHERE UserID = ? AND CryptoID = ?",
+                "SELECT ID, Amount FROM Wallet WHERE UserID = ? AND CryptoID = ?",
                 (userID, cryptoID)
             )
             result = self.cur.fetchone()
@@ -106,29 +106,31 @@ class database_connect():
             if result is None:
                 return False
 
-            current_amount = result[0]
+            ID = result[0]
+            Totale_amount = result[1]
 
             # Validate amount (with small tolerance for floating point comparison)
-            if amount > current_amount + 1e-8:
+            if amount > Totale_amount:
                 return False
 
             # If selling all (or nearly all due to float precision), delete the wallet entry
-            if abs(amount - current_amount) < 1e-8:
+            if abs(amount - Totale_amount) < 1e-2:
                 self.cur.execute(
-                    "DELETE FROM Wallet WHERE UserID = ? AND CryptoID = ?",
-                    (userID, cryptoID)
+                    "DELETE FROM Wallet WHERE ID = ?",
+                    (ID,)
                 )
             else:
                 # Update with new amount
-                new_amount = current_amount - amount
+                new_amount = Totale_amount - amount
                 self.cur.execute(
-                    "UPDATE Wallet SET Amount = ? WHERE UserID = ? AND CryptoID = ?",
-                    (new_amount, userID, cryptoID)
+                    "UPDATE Wallet SET Amount = ? WHERE ID = ?",
+                    (new_amount, ID)
                 )
 
             self.db.commit()
             return True
-        except Exception:
+        except Exception as e:
+            print(f"Database error in remove_crypto_from_wallet: {e}")
             return False
         
 
@@ -189,22 +191,28 @@ class database_connect():
         
     # ----------------------------- Transactions Log interactions -----------------------------
     def Transaction_Buy(self, cryptoID, userID, amount):
+        """Log Buy with time"""
         self.cur.execute(
             "INSERT INTO Transactions_Buy (CryptoID, UserID, Amount, DateTime) VALUES (?, ?, ?, ?)",
             (cryptoID, userID, amount, datetime.now(timezone.utc))
         )
+        self.db.commit()
     
     def Tansaction_Sell(self, cryptoID, userID, amount):
+        """Log Sell with time"""
         self.cur.execute(
             "INSERT INTO Transactions_Buy (CryptoID, UserID, Amount, DateTime) VALUES (?, ?, ?, ?)",
             (cryptoID, userID, amount, datetime.now(timezone.utc))
         )
+        self.db.commit()
 
     def Tansaction_UserToUser(self, cryptoID, from_userID, to_userID, amount):
+        """Log Transfer with time"""
         self.cur.execute(
             "INSERT INTO Transactions_Buy (CryptoID, UserFromID, UserToID, Amount, DateTime) VALUES (?, ?, ?, ?)",
             (cryptoID, from_userID, to_userID, amount, datetime.now(timezone.utc))
         )
+        self.db.commit()
 
     def close(self):
         self.db.close()

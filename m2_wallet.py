@@ -47,13 +47,14 @@ class set_Up_Wallet:
         # find names of all crypto currensy's
         Coin_IDs = [row[0] for row in Wallet]
         coins_details = self.API_search.fetch_crypto_batch(Coin_IDs)
+        if not isinstance(coins_details, dict):
+            coins_details = {}
 
         for Coin_ID, Coin_Name, amount in Wallet:
             # Fetch current price
             try:
-                temp1 = coins_details[Coin_ID]
-                price_gbp = temp1.get('current_price', {})
-                #price_gbp = coins_details[name].get('market_data', {}).get('current_price', {}).get('gbp', 0)
+                temp1 = coins_details.get(Coin_ID, {})
+                price_gbp = temp1.get('current_price', 0)
             except Exception:
                 price_gbp = 0
             

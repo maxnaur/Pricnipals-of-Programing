@@ -1,61 +1,57 @@
 import customtkinter as ctk
 from m2_database_interactions import database_connect
-#from crypto_API import fetch_coin_details
 from CTkMessagebox import CTkMessagebox
 
 class set_Up_Transfer:
-    def __init__(self, Menu, dbLocation, userID):
+    def __init__(self, Menu, dbLocation, API_search, userID):
         self.Menu = Menu
+        self.API_search = API_search
         self.dbLocation = dbLocation
         self.userID = userID
-        self.display_transfer()
+        self.Display = ctk.CTkFrame(self.Menu)
+        self.Display.pack(fill='both', expand=True)
+        # Initialize display
+        self.display_wallet()
 
-    def display_transfer(self):
-        """Display transfer interface."""
+    def display_wallet(self):
+        """Display all cryptocurrencies owned by the user for selling."""
+        # Create header
         ctk.CTkLabel(
-            self.Menu,
-            text="Transfer Cryptocurrency",
+            self.Display,
+            text="Sell Cryptocurrency",
             font=ctk.CTkFont(family='Consolas', size=15)
         ).pack(pady=14)
 
-        # Recipient ID input
-        recipient_frame = ctk.CTkFrame(self.Menu)
-        recipient_frame.pack(fill="x", padx=10, pady=10)
-
-        ctk.CTkLabel(
-            recipient_frame,
-            text="Recipient User ID:",
-            font=ctk.CTkFont(family='Consolas', size=11)
-        ).pack(side="left", padx=(0, 10))
-
-        recipient_entry = ctk.CTkEntry(recipient_frame, width=150)
-        recipient_entry.pack(side="left")
-
-        # Crypto selection
+        # Fetch wallet data
         db = database_connect(self.dbLocation)
         holdings = db.get_user_holdings(self.userID)
         db.close()
 
         if not holdings:
             ctk.CTkLabel(
-                self.Menu,
-                text="No cryptocurrencies in your wallet to transfer",
+                self.Display,
+                text="No cryptocurrencies in your wallet to sell",
                 font=ctk.CTkFont(family='Consolas', size=12)
             ).pack(pady=10)
             return
 
         # Create scrollable frame for holdings
-        container = ctk.CTkFrame(self.Menu)
+        container = ctk.CTkFrame(self.Display)
         container.pack(padx=10, pady=10, fill="both", expand=True)
         
         scrollable_frame = ctk.CTkScrollableFrame(container)
         scrollable_frame.pack(fill="both", expand=True)
+        
+        Coin_IDs = []
+        for _, _, coin_ID, amount in holdings:
+            Coin_IDs.append(coin_ID)
+        coins_details = self.API_search.fetch_crypto_batch(Coin_IDs)
 
-        for crypto_id, coin_name, coin_id_str, amount in holdings:
+        for crypto_ID, coin_name, coin_ID, amount in holdings:
             # Fetch current price
             try:
-                details = fetch_coin_details(coin_id_str)
-                price_gbp = details.get('market_data', {}).get('current_price', {}).get('gbp', 0)
+                details = coins_details[coin_ID]
+                price_gbp = details.get('current_price', {})
             except Exception:
                 price_gbp = 0
 
@@ -68,131 +64,110 @@ class set_Up_Transfer:
             # Create clickable button
             btn = ctk.CTkButton(
                 holding_frame,
-                text=f"{coin_name} ({coin_id_str.upper()})  |  Amount: {amount:.8f}  |  Price: £{price_gbp:,.2f}  |  Value: £{coin_value:,.2f}",
+                text=f"{coin_name} ({coin_ID.upper()})  |  Amount: {amount:.2f}  |  Price: £{price_gbp:,.2f}  |  Value: £{coin_value:,.2f}",
                 fg_color="gray30",
                 hover_color="#494545",
                 text_color="white",
-                command=lambda cid=crypto_id, cname=coin_name, cid_str=coin_id_str, amt=amount, rid=recipient_entry: self.transfer_prompt(rid, cid, cname, cid_str, amt, price_gbp),
+                command=lambda cid=crypto_ID, cname=coin_name, cid_str=coin_ID, amt=amount: transfer_prompt(self, cid, cname, amt),
                 font=ctk.CTkFont(family='Consolas', size=10),
                 height=50
             )
             btn.pack(fill="x", padx=5, pady=5)
 
-    def transfer_prompt(self, recipient_entry, crypto_id, coin_name, coin_id_str, available_amount, price_gbp):
-        """Prompt user for transfer amount."""
-        recipient_id_str = recipient_entry.get().strip()
+        def transfer_prompt(self, crypto_id, coin_name, available_amount):
+            """Prompt user for transfer amount."""
+            self.Display_resset()
+    
+            ctk.CTkLabel(
+                self.Display,
+                text=f"Transfer {coin_name}",
+                font=ctk.CTkFont(family='Consolas', size=14, weight="bold")
+            ).pack(pady=10)
+    
+            ctk.CTkLabel(
+                self.Display,
+                text=f"Available: {available_amount:.2f}",
+                font=ctk.CTkFont(family='Consolas', size=11)
+            ).pack(pady=5)
+    
+            # Recipient entry (username or numeric user ID)
+            ctk.CTkLabel(
+                self.Display,
+                text="Recipient (username or user ID):",
+                font=ctk.CTkFont(family='Consolas', size=11)
+            ).pack(pady=(12, 5))
+            self.recipient_entry = ctk.CTkEntry(self.Display, width=250)
+            self.recipient_entry.pack(pady=5)
+    
+            # Amount entry
+            ctk.CTkLabel(
+                self.Display,
+                text="Amount to transfer:",
+                font=ctk.CTkFont(family='Consolas', size=11)
+            ).pack(pady=(12, 5))
+            self.transfer_amount_entry = ctk.CTkEntry(self.Display, width=200)
+            self.transfer_amount_entry.pack(pady=5)
+    
+            def do_transfer():
+                recipient = self.recipient_entry.get().strip()
+                amt_str = self.transfer_amount_entry.get().strip()
+    
+                # Basic validation
+                try:
+                    amount = float(amt_str)
+                except Exception:
+                    CTkMessagebox(title="Error", message="Enter a valid number for amount", icon="cancel")
+                    return
+    
+                if amount <= 0:
+                    CTkMessagebox(title="Error", message="Amount must be positive", icon="cancel")
+                    return
+                if amount > available_amount:
+                    CTkMessagebox(title="Error", message=f"Cannot transfer more than {available_amount:.2f}", icon="cancel")
+                    return
+                if not recipient:
+                    CTkMessagebox(title="Error", message="Enter a recipient username or user ID", icon="cancel")
+                    return
+    
+                # Decide whether recipient is numeric ID or username
+                to_userID = None
+                to_userName = None
+                if recipient.isdigit():
+                    to_userID = int(recipient)
+                else:
+                    to_userName = recipient
+    
+                db = database_connect(self.dbLocation)
+                try:
+                    success, msg = db.transfer_crypto_to_account(self.userID, to_userID, to_userName, crypto_id, amount)
+                    if success:
+                        db.Tansaction_UserToUser(crypto_id, self.userID, to_userID, to_userName, amount)
+                    db.close()
+                except Exception as e:
+                    db.close()
+                    CTkMessagebox(title="Error", message=f"Database error: {e}", icon="cancel")
+                    return
+    
+                if success:
+                    # refresh display
+                    self.Display_resset()
+                    self.display_wallet()
+                    CTkMessagebox(title="Success", message=msg or "Transfer successful", icon="check")
+                else:
+                    CTkMessagebox(title="Error", message=msg or "Transfer failed", icon="cancel")
+    
+            btn = ctk.CTkButton(
+                self.Display,
+                text="Confirm Transfer",
+                font=('Consolas', 12),
+                width=160,
+                height=40,
+                command=do_transfer
+            )
+            btn.pack(pady=16)
 
-        if not recipient_id_str:
-            CTkMessagebox(title="Error", message="Please enter a recipient User ID", icon="cancel")
-            return
-
-        try:
-            recipient_id = int(recipient_id_str)
-        except ValueError:
-            CTkMessagebox(title="Error", message="Recipient User ID must be a number", icon="cancel")
-            return
-
-        if recipient_id == self.userID:
-            CTkMessagebox(title="Error", message="Cannot transfer to yourself", icon="cancel")
-            return
-
-        # Create a new window for transfer
-        transfer_window = ctk.CTkToplevel(self.Menu)
-        transfer_window.title(f"Transfer {coin_name}")
-        transfer_window.geometry("500x300")
-
-        ctk.CTkLabel(
-            transfer_window,
-            text=f"Transfer {coin_name}",
-            font=ctk.CTkFont(family='Consolas', size=14, weight="bold")
-        ).pack(pady=10)
-
-        ctk.CTkLabel(
-            transfer_window,
-            text=f"To User ID: {recipient_id}",
-            font=ctk.CTkFont(family='Consolas', size=11)
-        ).pack(pady=5)
-
-        ctk.CTkLabel(
-            transfer_window,
-            text=f"Available: {available_amount:.8f}",
-            font=ctk.CTkFont(family='Consolas', size=11)
-        ).pack(pady=5)
-
-        ctk.CTkLabel(
-            transfer_window,
-            text=f"Current price: £{price_gbp:,.2f}",
-            font=ctk.CTkFont(family='Consolas', size=11)
-        ).pack(pady=5)
-
-        # Amount entry
-        ctk.CTkLabel(
-            transfer_window,
-            text="Amount to transfer:",
-            font=ctk.CTkFont(family='Consolas', size=11)
-        ).pack(pady=(15, 5))
-
-        amount_entry = ctk.CTkEntry(transfer_window, width=200)
-        amount_entry.pack(pady=5)
-
-        def execute_transfer():
-            try:
-                transfer_amount = float(amount_entry.get().strip())
-            except ValueError:
-                CTkMessagebox(title="Error", message="Enter a valid number", icon="cancel")
-                return
-
-            # Validate amount
-            if transfer_amount <= 0:
-                CTkMessagebox(title="Error", message="Amount must be positive", icon="cancel")
-                return
-
-            if transfer_amount > available_amount:
-                CTkMessagebox(
-                    title="Error", 
-                    message=f"Cannot transfer more than {available_amount:.8f} {coin_name}", 
-                    icon="cancel"
-                )
-                return
-
-            # Perform transfer
-            db = database_connect(self.dbLocation)
-            try:
-                success, message = db.transfer_crypto_to_account(self.userID, recipient_id, crypto_id, transfer_amount)
-                db.close()
-            except Exception as e:
-                db.close()
-                CTkMessagebox(
-                    title="Error",
-                    message=f"Database error: {str(e)}",
-                    icon="cancel"
-                )
-                return
-
-            if success:
-                total_gbp = transfer_amount * price_gbp
-                CTkMessagebox(
-                    title="Success",
-                    message=f"Transferred {transfer_amount:.8f} {coin_name} to User ID {recipient_id} (Value: £{total_gbp:,.2f})",
-                    icon="check"
-                )
-                transfer_window.destroy()
-                # Refresh display
-                self.Menu.pack_forget()
-                self.Menu = ctk.CTkFrame(self.Menu.master)
-                self.Menu.pack(fill='both', expand=True)
-                self.display_transfer()
-            else:
-                CTkMessagebox(
-                    title="Error",
-                    message=message,
-                    icon="cancel"
-                )
-
-        ctk.CTkButton(
-            transfer_window,
-            text="Confirm Transfer",
-            command=execute_transfer,
-            width=150,
-            height=40
-        ).pack(pady=20)
+    def Display_resset(self):
+        """clear screen"""
+        self.Display.pack_forget()
+        self.Display = ctk.CTkFrame(self.Menu)
+        self.Display.pack(fill='both', expand=True)

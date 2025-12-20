@@ -134,13 +134,25 @@ class database_connect():
             return False
         
 
-    def transfer_crypto_to_account(self, from_userID, to_userID, cryptoID, amount):
+    def transfer_crypto_to_account(self, from_userID, to_userID, to_userName, cryptoID, amount):
         """Transfer cryptocurrency from one user to another."""
+        # Validate inputs
+        if to_userID is None and to_userName is None:
+            return False, "Recipient information is required"
+
+        # prevent sql injection
+        if to_userName is not None:
+            if not re.match(r'^[a-zA-Z]+$', to_userName):
+                return False, "Invalid recipient username"
+        
         try:
-            # Validate recipient exists
-            self.cur.execute("SELECT ID FROM User WHERE ID = ?", (to_userID,))
-            if self.cur.fetchone() is None:
+            is_valid, temp_userID = self.check_userID(to_userID, to_userName)
+            if not is_valid:
                 return False, "Recipient user not found"
+            to_userID = temp_userID
+            
+            if from_userID == to_userID:
+                return False, "Cannot transfer to the same account"
 
             # Check sender has sufficient balance
             self.cur.execute(
@@ -189,28 +201,46 @@ class database_connect():
         except Exception as e:
             return False, f"Transfer failed: {str(e)}"
         
+    def check_userID (self, userID, username):
+        # prioritize username if provided
+        if username is None:
+            # Validate recipient exists
+            self.cur.execute("SELECT ID FROM User WHERE ID = ?", (userID,))
+            if self.cur.fetchone() is None:
+                return False, None
+        else:
+            # Fetch recipient userID from username
+            self.cur.execute("SELECT ID FROM User WHERE Username = ?", (username,))
+            result = self.cur.fetchone()
+            if result is None:
+                return False, None
+            userID = result[0]
+        return True, userID
+        
     # ----------------------------- Transactions Log interactions -----------------------------
     def Transaction_Buy(self, cryptoID, userID, amount):
         """Log Buy with time"""
         self.cur.execute(
             "INSERT INTO Transactions_Buy (CryptoID, UserID, Amount, DateTime) VALUES (?, ?, ?, ?)",
-            (cryptoID, userID, amount, datetime.now(timezone.utc))
+            (cryptoID, userID, amount, datetime.now(timezone.utc).isoformat())
         )
         self.db.commit()
     
     def Tansaction_Sell(self, cryptoID, userID, amount):
         """Log Sell with time"""
         self.cur.execute(
-            "INSERT INTO Transactions_Buy (CryptoID, UserID, Amount, DateTime) VALUES (?, ?, ?, ?)",
-            (cryptoID, userID, amount, datetime.now(timezone.utc))
+            "INSERT INTO Transactions_Sell (CryptoID, UserID, Amount, DateTime) VALUES (?, ?, ?, ?)",
+            (cryptoID, userID, amount, datetime.now(timezone.utc).isoformat())
         )
         self.db.commit()
 
-    def Tansaction_UserToUser(self, cryptoID, from_userID, to_userID, amount):
+    def Tansaction_UserToUser(self, cryptoID, from_userID, to_userID, to_userName, amount):
         """Log Transfer with time"""
+        # no need to check if valid because it will be if you got to this point
+        _, temp_userID = self.check_userID(to_userID, to_userName)
         self.cur.execute(
-            "INSERT INTO Transactions_Buy (CryptoID, UserFromID, UserToID, Amount, DateTime) VALUES (?, ?, ?, ?)",
-            (cryptoID, from_userID, to_userID, amount, datetime.now(timezone.utc))
+            "INSERT INTO Transactions_UserToUser (CryptoID, UserFromID, UserToID, Amount, DateTime) VALUES (?, ?, ?, ?, ?)",
+            (cryptoID, from_userID, temp_userID, amount, datetime.now(timezone.utc).isoformat())
         )
         self.db.commit()
 

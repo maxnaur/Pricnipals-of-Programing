@@ -41,7 +41,10 @@ class API_search():
             response = requests.get(url, params, timeout=10)
             if (response.status_code != 200):
                 print(f"Response code: {response.status_code}") # print code for debugging
-            data = response.json()
+            try:
+                data = response.json()
+            except Exception:
+                data = {}
             return data
         except Exception as e:
             print(f"Error fetching data: {e}")
@@ -77,10 +80,15 @@ class API_search():
         }
         
         data = self.request(url, params)
+        # Defensive: ensure we got a list
+        if not isinstance(data, list):
+            return {}
         
         # Build mapping of coin_id to full market data
         batch_data = {}
         for coin in data:
+            if not isinstance(coin, dict):
+                continue
             coin_id = coin.get('id')
             if coin_id:
                 batch_data[coin_id] = {
@@ -103,7 +111,7 @@ class API_search():
             return data
 
         if self.check_last_call():
-            return {}
+            return []
         
         url = r"https://api.coingecko.com/api/v3/coins/markets"
         params = {
@@ -114,6 +122,9 @@ class API_search():
         }
         
         data = self.request(url, params)
+        # Defensive: ensure list
+        if not isinstance(data, list):
+            return []
         return data
     
     def search_coins(self, query_string):
@@ -131,7 +142,9 @@ class API_search():
 
         if not data or 'coins' not in data:
             return []
-
+        
+        self.cash_top_250_last_call = datetime.now(timezone.utc)
+        self.cash_top_250 = data
         return data
     
     def fetch_single_coin_details(self, coin_ID):

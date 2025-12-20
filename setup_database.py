@@ -27,13 +27,16 @@ def Add_User(cursor, username, password):
 def Add_Coins(cursor, WALLET, API_Search):
     """Add all crypto currencys to the database"""
     # Fetch all crypto names in a single API call
-    crypto_data = API_Search.fetch_crypto_batch(list(WALLET.keys()))
+    crypto_data = []
     crypto_ID_List = []
 
     for coin_id, _ in WALLET.items():
         ID_List = find_ID(cursor, "Crypto", "CoinID", coin_id)
         
         if ID_List is None:
+            # to reduse API calls
+            if crypto_data == []:
+                crypto_data = API_Search.fetch_crypto_batch(list(WALLET.keys()))
             # Get name from batch data
             coin_name = crypto_data[coin_id].get('name')
             cursor.execute('''
@@ -97,6 +100,32 @@ def Create_Admin(cursor, API_Search): # username : admin password : admin
     crypto_ID_List = Add_Coins(cursor, WALLET, API_Search)
     Add_Wallet(cursor, User_ID, crypto_ID_List, WALLET)
 
+
+# got bord so made a user that gets random crypto in their wallet to see how it looks
+# it looks ugly so and instead used a pre defined set
+def Create_Random_User(cursor, API_Search):
+    """Add Random dummy user"""
+    import random
+    username = "random"
+    password = "random"
+    # get a list of all coin ID's from the API
+    all_coins = API_Search.fetch_top_250_crypto_list()
+    WALLET = {}
+    # randomly select some coins and amounts
+    for _ in range(15):
+        coin = random.choice(all_coins).get('id')
+        amount = round(random.uniform(0.1, 100), 2)
+        WALLET[coin] = amount
+
+    # check user exists
+    ID_list = find_ID(cursor, "User", "Username", username)
+    if ID_list is not None:
+        # user exists so don't add again
+        return
+
+    User_ID = Add_User(cursor, username, password)
+    crypto_ID_List = Add_Coins(cursor, WALLET, API_Search)
+    Add_Wallet(cursor, User_ID, crypto_ID_List, WALLET)
 
 # ---------------------- function that will run first -------------------
 def setup_database(dbLocation, API_Search):
@@ -176,6 +205,7 @@ def setup_database(dbLocation, API_Search):
 
     Create_Shown_User(cursor, API_Search)
     Create_Admin(cursor, API_Search)
+    Create_Random_User(cursor, API_Search)
 
     connection.commit()
     connection.close()

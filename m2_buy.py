@@ -55,8 +55,18 @@ class set_Up_Buy():
         """make the display list and search function"""
         self.clear_frame()
 
-        for coin in crypto_data:
-            # Support both dict-like coin objects and other fallback formats
+        # Normalize input and be defensive against API errors / rate limits
+        if isinstance(crypto_data, dict):
+            crypto_list = crypto_data.get('coins') or crypto_data.get('data') or []
+        elif isinstance(crypto_data, list):
+            crypto_list = crypto_data
+        else:
+            crypto_list = []
+
+        for coin in crypto_list:
+            if not isinstance(coin, dict):
+                continue
+
             name_display = coin.get('name') or coin.get('id') or '<unknown>'
             symbol_display = (coin.get('symbol') or '').upper()
             market_cap = coin.get('market_cap') or coin.get('market_cap_rank') or 0
@@ -198,4 +208,3 @@ class set_Up_Buy():
         self.Display.pack_forget()
         self.Display = ctk.CTkFrame(self.Menu)
         self.Display.pack(fill='both', expand=True)
-    

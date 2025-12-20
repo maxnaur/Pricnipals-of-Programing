@@ -79,7 +79,7 @@ class Wallet_Sidebar:
         elif menu_name == "Sell":
             sell = set_Up_Sell(self.Menu, self.dbLocation, self.API_search, self.userID)
         elif menu_name == "Transfer":
-            transfer = set_Up_Transfer(self.Menu, self.dbLocation, self.userID)
+            transfer = set_Up_Transfer(self.Menu, self.dbLocation, self.API_search, self.userID)
         elif menu_name == "QR Code\nof userID":
             Display_QR_code(self)
             self.Load_Menu("Wallet")

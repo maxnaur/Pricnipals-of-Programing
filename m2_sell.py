@@ -9,17 +9,9 @@ class set_Up_Sell:
         self.dbLocation = dbLocation
         self.API_search = API_search
         self.userID = userID
-        self.Display = None
-        # Initialize display
-        self.Display_resset(True)
-    
-    def Display_resset(self, first_time=False):
-        """Resset everything to start"""
-        if not first_time:
-            self.Display.pack_forget()
         self.Display = ctk.CTkFrame(self.Menu)
         self.Display.pack(fill='both', expand=True)
-        # display wallet
+        # Initialize display
         self.display_wallet()
 
     def display_wallet(self):
@@ -77,49 +69,47 @@ class set_Up_Sell:
                 fg_color="gray30",
                 hover_color="#494545",
                 text_color="white",
-                command=lambda cid=crypto_ID, cname=coin_name, cid_str=coin_ID, amt=amount: self.sell_prompt(cid, cname, cid_str, amt, price_gbp),
+                command=lambda cid=crypto_ID, cname=coin_name, amt=amount: self.sell_prompt(cid, cname, amt, price_gbp),
                 font=ctk.CTkFont(family='Consolas', size=10),
                 height=50
             )
             btn.pack(fill="x", padx=5, pady=5)
 
-    def sell_prompt(self, crypto_id, coin_name, coin_ID, available_amount, price_gbp):
+    def sell_prompt(self, crypto_id, coin_name, available_amount, price_gbp):
         """Prompt user for sell amount."""
-        # Create a new window for selling
-        self.sell_window = ctk.CTkToplevel(self.Display)
-        self.sell_window.title(f"Sell {coin_name}")
-        self.sell_window.geometry("400x300")
-
+        # clear screen and setup display sell item
+        self.Display_resset()
+        
         ctk.CTkLabel(
-            self.sell_window,
+            self.Display,
             text=f"Sell {coin_name}",
             font=ctk.CTkFont(family='Consolas', size=14, weight="bold")
         ).pack(pady=10)
 
         ctk.CTkLabel(
-            self.sell_window,
+            self.Display,
             text=f"Available: {available_amount:.2f}",
             font=ctk.CTkFont(family='Consolas', size=11)
         ).pack(pady=5)
 
         ctk.CTkLabel(
-            self.sell_window,
+            self.Display,
             text=f"Current price: £{price_gbp:,.2f}",
             font=ctk.CTkFont(family='Consolas', size=11)
         ).pack(pady=5)
 
         # Amount entry
         ctk.CTkLabel(
-            self.sell_window,
+            self.Display,
             text="Amount to sell:",
             font=ctk.CTkFont(family='Consolas', size=11)
         ).pack(pady=(15, 5))
 
-        self.amount_entry = ctk.CTkEntry(self.sell_window, width=200)
+        self.amount_entry = ctk.CTkEntry(self.Display, width=200)
         self.amount_entry.pack(pady=5)
 
         btn = ctk.CTkButton(
-            self.sell_window,
+            self.Display,
             text="Confirm Sell",
             font=('Consolas', 12),
             width=150,
@@ -174,8 +164,9 @@ class set_Up_Sell:
         if success:
             total_gbp = sell_amount * price_gbp
             # Refresh wallet display
-            self.sell_window.destroy()
+            self.Display.destroy()
             self.Display_resset()
+            self.display_wallet()
             
             CTkMessagebox(
                 title="Success",
@@ -189,3 +180,8 @@ class set_Up_Sell:
                 icon="cancel"
             )
     
+    def Display_resset(self, first_time=False):
+        """Resset everything to start"""
+        self.Display.pack_forget()
+        self.Display = ctk.CTkFrame(self.Menu)
+        self.Display.pack(fill='both', expand=True)

@@ -84,8 +84,8 @@ class database_connect():
             return False
 
         # Username validation
-        if not re.match(r"^[a-zA-Z0-9 ]+$", username):
-            CTkMessagebox(title="Error", message="Username can only contain letters, numbers, and spaces", icon="cancel")
+        if not re.match(r"^[a-zA-Z]+$", username):
+            CTkMessagebox(title="Error", message="Username can only contain letters", icon="cancel")
             return False
 
         self.cur.execute("SELECT COUNT(*) FROM User WHERE Username = ?", (username,))

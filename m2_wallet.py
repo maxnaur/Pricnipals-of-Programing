@@ -12,7 +12,7 @@ class set_Up_Wallet:
         self.display_wallet()
 
     def display_wallet(self):
-        """Display all cryptocurrencies owned by the user with their values."""
+        """Display all cryptocurrencies owned by the user with their values"""
         # Create header
         ctk.CTkLabel(
             self.Menu,

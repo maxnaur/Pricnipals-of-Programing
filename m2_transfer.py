@@ -14,7 +14,7 @@ class set_Up_Transfer:
         self.display_wallet()
 
     def display_wallet(self):
-        """Display all cryptocurrencies owned by the user for selling."""
+        """Display all cryptocurrencies owned by the user for selling"""
         # Create header
         ctk.CTkLabel(
             self.Display,
@@ -75,7 +75,7 @@ class set_Up_Transfer:
             btn.pack(fill="x", padx=5, pady=5)
 
         def transfer_prompt(self, crypto_id, coin_name, available_amount):
-            """Prompt user for transfer amount."""
+            """Prompt user for transfer amount"""
             self.Display_resset()
     
             ctk.CTkLabel(

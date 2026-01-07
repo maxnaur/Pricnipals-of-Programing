@@ -15,7 +15,7 @@ class set_Up_Sell:
         self.display_wallet()
 
     def display_wallet(self):
-        """Display all cryptocurrencies owned by the user for selling."""
+        """Display all cryptocurrencies owned by the user for selling"""
         # Create header
         ctk.CTkLabel(
             self.Display,
@@ -76,7 +76,7 @@ class set_Up_Sell:
             btn.pack(fill="x", padx=5, pady=5)
 
     def sell_prompt(self, crypto_id, coin_name, available_amount, price_gbp):
-        """Prompt user for sell amount."""
+        """Prompt user for sell amount"""
         # clear screen and setup display sell item
         self.Display_resset()
         

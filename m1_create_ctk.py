@@ -1,7 +1,7 @@
 import customtkinter as ctk
 
 def _create_top_label(Menu, text):
-    """Create a top label for the menu."""
+    """Create a top label for the menu"""
     lbl = ctk.CTkLabel(
         Menu,
         text=text,
@@ -23,7 +23,7 @@ def _create_entry_row(Menu, label_text, show=None):
     return entry
 
 def _create_button_bottom(Menu, text, input_command):
-    """Create a button at the bottom of the menu."""
+    """Create a button at the bottom of the menu"""
     btn = ctk.CTkButton(
         Menu,
         text=text,

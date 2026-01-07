@@ -15,7 +15,7 @@ class database_connect():
     
     # -------------------------- Login Section --------------------------
     def Verify_login(self, higher_self):
-        """Verify user credentials."""
+        """Verify user credentials"""
         username = higher_self.UserN_En.get().strip()
         password = higher_self.Psw_En.get().strip()
 
@@ -41,7 +41,7 @@ class database_connect():
 
     # -------------------------- Create Account Section --------------------------
     def Create_account(self, higher_self):
-        """Create a new user account with full validation."""
+        """Create a new user account with full validation"""
         username = higher_self.UserN_En.get().strip()
         email = higher_self.email_EN.get().strip()
         password = higher_self.Psw_En1.get()

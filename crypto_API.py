@@ -63,7 +63,7 @@ class API_search():
 
     # in order of call throughout coded
     def fetch_crypto_batch(self, coin_ids):
-        """Fetch coin data (names, prices, market data) for a list of coin IDs in a single API call."""
+        """Fetch coin data (names, prices, market data) for a list of coin IDs in a single API call"""
         # check cash if the wallet has been called before
         if self.cash_wallet_coinIDs == coin_ids:
             (cash, data) = self.check_cash(self.cash_wallet_last_call, self.cash_wallet)
@@ -148,7 +148,7 @@ class API_search():
         return data
     
     def fetch_single_coin_details(self, coin_ID):
-        """Fetch coin data (names, prices, market data) for a list of coin IDs in a single API call."""
+        """Fetch coin data (names, prices, market data) for a list of coin IDs in a single API call"""
         # check cash if the wallet has been called before
         if self.check_last_call():
             return {}

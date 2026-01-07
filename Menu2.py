@@ -1,18 +1,16 @@
 import customtkinter as ctk
-import qrcode
-import os
 from m2_database_interactions import database_connect
 
 from m2_wallet import set_Up_Wallet
 from m2_buy import set_Up_Buy
 from m2_sell import set_Up_Sell
 from m2_transfer import set_Up_Transfer
-from m2_qr_code import Display_QR_code
+from m2_qr_code import set_Up_QR_Code
 
 
 class Wallet_Sidebar:
     def __init__(self, main, dbLocation, API_search, username):
-        """Initialize the wallet sidebar."""
+        """Initialize the wallet sidebar"""
         self.main = main
         self.main.geometry('1000x800')
         self.sidebar = ctk.CTkFrame(self.main, width=120, fg_color="gray30")
@@ -26,17 +24,12 @@ class Wallet_Sidebar:
         self.userID = self.db.get_userID(username)
         self.holdings = self.db.get_userWallet(self.userID)
         self.db.close()
-        
-        # make QR code and save to file
-        qr_image = qrcode.make(self.userID)
-        qrLocation = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'user_wallet_qr.png')
-        qr_image.save(qrLocation)
 
         self.Setup_sidebar()
 
     # ------------------------- Sidebar Setup -------------------------
     def Setup_sidebar(self):
-        """Set up sidebar buttons and layout."""
+        """Set up sidebar buttons and layout"""
         self.sidebar.Crypto_Lb = ctk.CTkLabel(
             self.sidebar,
             text="Crypto Wallet",
@@ -65,7 +58,7 @@ class Wallet_Sidebar:
 
     # ------------------------- Menu Switching -------------------------
     def Load_Menu(self, menu_name):
-        """Switch between menus."""
+        """Switch between menus"""
         if self.Menu:
             self.Menu.pack_forget()
 
@@ -81,5 +74,4 @@ class Wallet_Sidebar:
         elif menu_name == "Transfer":
             transfer = set_Up_Transfer(self.Menu, self.dbLocation, self.API_search, self.userID)
         elif menu_name == "QR Code\nof userID":
-            Display_QR_code(self)
-            self.Load_Menu("Wallet")
+            qr_code = set_Up_QR_Code(self.Menu, self.userID)

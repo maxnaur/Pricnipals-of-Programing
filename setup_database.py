@@ -64,7 +64,16 @@ def Add_Wallet(cursor, User_ID, crypto_ID_List, WALLET):
                 VALUES (?, ?, ?)''',
                 (User_ID, crypto_ID, amount))
         pointer += 1
-    
+
+def Create_Empty_User(cursor, API_Search): # username : empty password : empty
+    """Add Empty dummy user"""
+    username = "empty"
+    password = "empty"
+    WALLET = {}
+
+    User_ID = Add_User(cursor, username, password)
+    crypto_ID_List = Add_Coins(cursor, WALLET, API_Search)
+    Add_Wallet(cursor, User_ID, crypto_ID_List, WALLET)
 
 def Create_Shown_User(cursor, API_Search): # username : user password : user
     """Add User dummy user"""
@@ -203,6 +212,7 @@ def setup_database(dbLocation, API_Search):
         FOREIGN KEY(CryptoID) REFERENCES Crypto(ID)
     );''')
 
+    Create_Empty_User(cursor, API_Search)
     Create_Shown_User(cursor, API_Search)
     Create_Admin(cursor, API_Search)
     Create_Random_User(cursor, API_Search)

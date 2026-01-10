@@ -3,10 +3,6 @@ from datetime import datetime, timezone
 
 # using CoinGecko
 # limit of 5 - 15 calls per minute
-# to stay safe only call every 12 seconds
-# break down of every call
-# setup_datablse 2 call
-# m2_wallet 1 call for all coins, will break if over 100 coins in system for a user
 
 class API_search():
     """All API calls to coingecko"""
@@ -21,10 +17,11 @@ class API_search():
 
     def check_last_call(self):
         """make sure api is not called more than 6 times per minute"""
-        if len(self.call_list) < 5:
-            return False
-
         current_time = datetime.now(timezone.utc)
+        if len(self.call_list) < 5:
+            self.call_list.append(current_time)
+            return False
+        
         earlyest_time = self.call_list[0]
         diff_seconds = (current_time - earlyest_time).total_seconds()
         if diff_seconds > 60:

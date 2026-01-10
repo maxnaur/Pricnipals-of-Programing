@@ -2,13 +2,14 @@ import customtkinter as ctk
 import os
 from crypto_API import API_search
 from setup_database import setup_database
-from Menu1 import Login_Sidebar
+from Menu1 import Authentication
 
 class Etternal_GUI:
     """Create innishal Window that most things will resside in"""
     def __init__(self):
         super().__init__()
 
+        # API setup
         self.API_search = API_search()
 
         # Database setup
@@ -22,10 +23,9 @@ class Etternal_GUI:
         self.main = ctk.CTk()
         self.main.title('Crypto Wallet')
         self.main.geometry('500x400')
-        
 
         # Sidebar setup
-        Login_Sidebar(self.main, self.dbLocation, self.API_search)
+        Authentication(self.main, self.dbLocation, self.API_search)
 
 
 if __name__ == "__main__":

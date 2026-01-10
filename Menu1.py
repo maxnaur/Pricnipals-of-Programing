@@ -2,7 +2,7 @@ import customtkinter as ctk
 from m1_login import load_LoginGUI
 from m1_register import load_NewUserGUI
 
-class Login_Sidebar:
+class Authentication_Sidebar:
     """Create first Sidebar which will allow the user to login and create an account"""
     def __init__(self, main, dbLocation, API_search):
         """Initialize the login sidebar"""

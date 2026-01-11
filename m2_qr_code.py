@@ -5,7 +5,6 @@ from PIL import Image, ImageTk
 from pyzbar.pyzbar import decode
 from tkinter import filedialog # For file dialog
 
-
 class set_Up_QR_Code:
     """Display User QR code GUI"""
     def __init__(self, Menu, userID):
@@ -31,7 +30,6 @@ class set_Up_QR_Code:
             text="Read QR Code from file",
             command=self.read_QR_code
         ).pack(pady=10)
-
 
     def display_QR_code(self):
         """Make and display a QR of the User ID so others can send crypto to the wallet."""

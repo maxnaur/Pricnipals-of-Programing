@@ -1,3 +1,4 @@
+import re
 import customtkinter as ctk
 from m2_database_interactions import database_connect
 from CTkMessagebox import CTkMessagebox
@@ -14,11 +15,11 @@ class set_Up_Transfer:
         self.display_wallet()
 
     def display_wallet(self):
-        """Display all cryptocurrencies owned by the user for selling"""
+        """Display all cryptocurrencies owned by the user for transfering"""
         # Create header
         ctk.CTkLabel(
             self.Display,
-            text="Sell Cryptocurrency",
+            text="Transfer Cryptocurrency",
             font=ctk.CTkFont(family='Consolas', size=15)
         ).pack(pady=14)
 
@@ -135,7 +136,11 @@ class set_Up_Transfer:
                 if recipient.isdigit():
                     to_userID = int(recipient)
                 else:
-                    to_userName = recipient
+                    if re.match(r"^[a-zA-Z]+$", recipient):
+                        to_userName = recipient
+                    else:
+                        CTkMessagebox(title="Error", message="Recipient username must contain only letters", icon="cancel")
+                        return
     
                 db = database_connect(self.dbLocation)
                 try:

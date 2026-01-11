@@ -22,6 +22,9 @@ class database_connect():
         if not username or not password:
             CTkMessagebox(title="Error", message="Both fields must be filled", icon="cancel")
             return False
+        elif not re.match(r"^[a-zA-Z]+$", username):
+            CTkMessagebox(title="Error", message="Username can only contain letters", icon="cancel")
+            return False
 
         self.cur.execute("SELECT Password FROM User WHERE Username = ?", (username,))
         foundPassword = self.cur.fetchone()

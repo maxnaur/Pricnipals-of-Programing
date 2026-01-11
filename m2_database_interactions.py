@@ -78,7 +78,6 @@ class database_connect():
                 (userID, cryptoID, amount)
             )
         self.db.commit()
-        
 
     def get_user_holdings(self, userID):
         """Fetch all cryptocurrencies and amounts owned by a user."""
@@ -133,7 +132,6 @@ class database_connect():
             print(f"Database error in remove_crypto_from_wallet: {e}")
             return False
         
-
     def transfer_crypto_to_account(self, from_userID, to_userID, to_userName, cryptoID, amount):
         """Transfer cryptocurrency from one user to another."""
         # Validate inputs

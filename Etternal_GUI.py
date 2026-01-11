@@ -2,7 +2,7 @@ import customtkinter as ctk
 import os
 from crypto_API import API_search
 from setup_database import setup_database
-from Menu1 import Authentication
+from Menu1 import Authentication_Sidebar
 
 class Etternal_GUI:
     """Create innishal Window that most things will resside in"""
@@ -25,7 +25,7 @@ class Etternal_GUI:
         self.main.geometry('500x400')
 
         # Sidebar setup
-        Authentication(self.main, self.dbLocation, self.API_search)
+        Authentication_Sidebar(self.main, self.dbLocation, self.API_search)
 
 
 if __name__ == "__main__":

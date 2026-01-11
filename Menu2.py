@@ -7,7 +7,6 @@ from m2_sell import set_Up_Sell
 from m2_transfer import set_Up_Transfer
 from m2_qr_code import set_Up_QR_Code
 
-
 class Wallet_Sidebar:
     def __init__(self, main, dbLocation, API_search, username):
         """Initialize the wallet sidebar"""
@@ -22,7 +21,6 @@ class Wallet_Sidebar:
         # Database connection
         self.db = database_connect(self.dbLocation)
         self.userID = self.db.get_userID(username)
-        self.holdings = self.db.get_userWallet(self.userID)
         self.db.close()
 
         self.Setup_sidebar()
